@@ -6,11 +6,11 @@
  Weekly goal for embroidery hours.
  
  Menu 
-    1. Add embroidery session.
-    2. View sessions.
-    3. Get recommendation.
-    4. Save report.
-    5. Quit.
+ 1. Add embroidery session.
+ 2. View sessions.
+ 3. Get recommendation.
+ 4. Save report.
+ 5. Quit.
 
 # Outputs
  1. Description
