@@ -2,10 +2,10 @@
 ## This program is intended to track embroidery projects, as well as the hours spent and cost associated with them. 
 
 # Inputs
- Name.
- Weekly goal for embroidery hours.
+ ## Name.
+ ## Weekly goal for embroidery hours.
  
- Menu 
+ ## Menu 
  1. Add embroidery session.
  2. View sessions.
  3. Get recommendation.
