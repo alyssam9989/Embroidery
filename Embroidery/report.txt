@@ -2,5 +2,5 @@ Embroidery Report for Alyssa
 Weekly Hour Goal: 100.0
 
 Description         Hours     Cost      Difficulty     
-Bear                20.0      2.00      Easy           
-Flowers             45.0      6.00      Hard           
+Bear                2.0       3.00      Easy           
+Flowers             35.0      8.00      Hard           
