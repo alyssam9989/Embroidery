@@ -5,6 +5,12 @@
 
 using namespace std;
 
+// DOCTEST
+#ifdef _DEBUG
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "doctest.h"
+#endif
+
 // Constants
 const int MAX_SESSIONS = 5;
 const double MIN_HOURS_GOOD = 5.0;
@@ -39,7 +45,55 @@ void printSession(const Session& s);
 void saveReport(const Session sessions[], int count, const string& name, double goal);
 void showMenu();
 
+double calculateTotalHours(const Session sessions[], int count);
+double calculateTotalCost(const Session sessions[], int count);
+const char* difficultyToString(DifficultyLevel d);
+
+// New Class- Week 2
+class EmbroideryTracker {
+private: 
+	Session sessions[MAX_SESSIONS];
+	int count;
+
+public:
+	EmbroideryTracker() : count(0) {}
+
+	bool addSession(const Session& s) {
+		if (count >= MAX_SESSIONS || s.hours < 0 || s.cost < 0)
+			return false;
+		sessions[count++] = s;
+		return true;
+	}
+
+	int getSessionCount() const {
+		return count;
+	}
+
+	double getTotalHours() const {
+		return calculateTotalHours(sessions, count);
+	}
+
+	double getTotalCost() const {
+		return calculateTotalCost(sessions, count);
+	}
+
+	double getAverageHours() const {
+		if (count == 0) return 0.0;
+		return getTotalHours() / count;
+	}
+
+	DifficultyLevel getHardestDifficulty() const {
+		DifficultyLevel hardest = EASY;
+		for (int i = 0; i < count; i++) {
+			if (sessions[i].difficulty > hardest)
+				hardest = sessions[i].difficulty;
+		}
+		return hardest;
+	}
+};
+
 // Main
+#ifndef _DEBUG
 int main() {
 	Session sessions[MAX_SESSIONS];
 	int sessionCount = 0;
@@ -91,15 +145,8 @@ int main() {
 			break;
 
 		case 3: {
-			double totalHours = 0.0;
-			double totalCost = 0.0;
-			int index = 0;
-
-			while (index < sessionCount) {
-				totalHours += sessions[index].hours;
-				totalCost += sessions[index].cost;
-				index++;
-			}
+			double totalHours = calculateTotalHours(sessions, sessionCount);
+			double totalCost = calculateTotalCost(sessions, sessionCount);
 
 			cout << "\nRecommendation for " << userName << ":\n";
 
@@ -130,6 +177,7 @@ int main() {
 
 	return 0;
 }
+#endif
 
 // Functions
 void showBanner() {
@@ -186,15 +234,11 @@ void fillSession(Session& s) {
 }
 
 void printSession(const Session& s) {
-	string diff;
-	if (s.difficulty == EASY) diff = "Easy";
-	else if (s.difficulty == INTERMEDIATE) diff = "Intermediate";
-	else diff = "Hard";
 
 	cout << left << setw(20) << s.description
 		<< setw(10) << fixed << setprecision(1) << s.hours
 		<< setw(10) << fixed << setprecision(2) << s.cost
-		<< setw(15) << diff << endl;
+		<< setw(15) << difficultyToString(s.difficulty) << endl;
 }
 
 void saveReport(const Session sessions[], int count, const string& name, double goal) {
@@ -202,11 +246,6 @@ void saveReport(const Session sessions[], int count, const string& name, double 
 
 	outFile << "Embroidery Report for " << name << endl;
 	outFile << "Weekly Hour Goal: " << fixed << setprecision(1) << goal << "\n\n";
-
-	outFile << left << setw(20) << "Description"
-		<< setw(10) << "Hours"
-		<< setw(10) << "Cost"
-		<< setw(15) << "Difficulty" << endl;
 
 	for (int i = 0; i < count; i++) {
 		string diff;
@@ -232,3 +271,81 @@ void showMenu() {
 	cout << "5. Quit\n";
 	cout << "Enter your choice: ";
 }
+
+// Helper (testing)
+double calculateTotalHours(const Session sessions[], int count) {
+	double total = 0.0;
+	for (int i = 0; i < count; i++)
+		total += sessions[i].hours;
+	
+	return total;
+}
+
+// Calculation Logic (testing)
+double calculateTotalCost(const Session sessions[], int count) {
+	double total = 0.0;
+	for (int i = 0; i < count; i++)
+		total += sessions[i].cost;
+	return total;
+}
+
+// Enum Decision Logic (testing)
+const char* difficultyToString(DifficultyLevel d) {
+	switch (d) {
+	case EASY: return "Easy";
+	case INTERMEDIATE: return "Intermediate";
+	case HARD: return "Hard";
+	default: return "Unknown";
+	}
+}
+
+// DOCTEST
+#ifdef _DEBUG // test mode only
+
+TEST_CASE("Calculations - totals") {
+	Session s[2] = {
+		{"A", 2.5, 10.0, EASY},
+		{"B", 3.5, 20.0, HARD},
+	};
+
+	CHECK(calculateTotalHours(s, 2) == doctest::Approx(6.0));
+	CHECK(calculateTotalCost(s, 2) == doctest::Approx(30.0));
+
+}
+
+TEST_CASE("Calculation edge case - zero sessions") {
+	Session s[1];
+	CHECK(calculateTotalHours(s, 0) == 0.0);
+	CHECK(calculateTotalCost(s, 0) == 0.0);
+}
+
+TEST_CASE("Enum decision logic") {
+	CHECK(string(difficultyToString(EASY)) == "Easy");
+	CHECK(string(difficultyToString(INTERMEDIATE)) == "Intermediate");
+	CHECK(string(difficultyToString(HARD)) == "Hard");
+}
+
+TEST_CASE("Struct and array processing") {
+	Session s[3] = {
+		{"A", 1, 5, EASY},
+		{"B", 2, 10, INTERMEDIATE},
+		{"C", 3, 15, HARD}
+	};
+
+	CHECK(calculateTotalHours(s, 3) == 6);
+	CHECK(calculateTotalCost(s, 3) == 30);
+}
+
+TEST_CASE("Class methods - normal and guard cases") {
+	EmbroideryTracker t;
+
+	CHECK(t.getSessionCount() == 0); // edge case
+	CHECK(t.getAverageHours() == 0.0); // guard case
+
+	Session s = { "Test", 2.0, 5.0, HARD };
+	CHECK(t.addSession(s) == true); // normal case
+	CHECK(t.getSessionCount() == 1);
+	CHECK(t.getTotalHours() == 2.0);
+	CHECK(t.getHardestDifficulty() == HARD);
+}
+#endif
