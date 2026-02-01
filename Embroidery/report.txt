@@ -1,6 +1,4 @@
-Embroidery Report for Alyssa
-Weekly Hour Goal: 100.0
+Embroidery Report for chris
+Weekly Hour Goal: 2.0
 
-Description         Hours     Cost      Difficulty     
-Bear                2.0       3.00      Easy           
-Flowers             35.0      8.00      Hard           
+test                2.0       3.00      Easy           

@@ -48,7 +48,97 @@ string difficultyToString(DifficultyLevel d) {
 class EmbroideryTracker {
 private: 
 	Session sessions[MAX_SESSIONS];
+
+public:
 	int numSessions = 0;
+
+	EmbroideryTracker() {}
+
+	EmbroideryTracker(Session s[], int numElements) {
+		for (int i = 0; i < numElements; ++i) {
+			addSession(s[i]);
+		}
+	}
+
+	bool addSession(Session& s) {
+		if (numSessions >= MAX_SESSIONS || s.hours < 0 || s.cost < 0)
+			return false;
+		sessions[numSessions++] = s;
+		return true;
+	}
+
+	int getSessionCount() {
+		return numSessions;
+	}
+
+	double calculateTotalHours() {
+		double total = 0.0;
+		for (int i = 0; i < numSessions; i++)
+			total += sessions[i].hours;
+
+		return total;
+	}
+
+	double getAverageHours() {
+		if (numSessions == 0) return 0.0;
+		return calculateTotalHours() / numSessions;
+	}
+
+	void fillSession() {
+
+		Session s;
+		s.description = getNonEmptyString("Session description : ");
+		s.hours = getPositiveDouble("Hours spent: ");
+		s.cost = getPositiveDouble("Thread cost: ");
+		s.difficulty = getDifficulty();
+		addSession(s);
+	}
+
+	DifficultyLevel getHardestDifficulty() {
+		DifficultyLevel hardest = EASY;
+		for (int i = 0; i < numSessions; i++) {
+			if (sessions[i].difficulty > hardest)
+				hardest = sessions[i].difficulty;
+		}
+		return hardest;
+	}
+	
+	void showBanner() {
+		cout << "=========================\n";
+		cout << "    Embroidery Tracker   \n";
+		cout << "=========================\n\n";
+	}
+
+	void printAllSessions() {
+		for (int i = 0; i < numSessions; i++) {
+			printSession(i);
+		}
+	}
+
+	void printSession(int sessionNum) {
+		Session s = sessions[sessionNum];
+
+		cout << left << setw(20) << s.description
+			<< setw(10) << fixed << setprecision(1) << s.hours
+			<< setw(10) << fixed << setprecision(2) << s.cost
+			<< setw(15) << difficultyToString(s.difficulty) << endl;
+	}
+
+	void saveReport(string& name, double goal) {
+		ofstream outFile("report.txt");
+
+		outFile << "Embroidery Report for " << name << endl;
+		outFile << "Weekly Hour Goal: " << fixed << setprecision(1) << goal << "\n\n";
+
+		for (int i = 0; i < numSessions; i++) {
+			outFile << left << setw(20) << sessions[i].description
+				<< setw(10) << fixed << setprecision(1) << sessions[i].hours
+				<< setw(10) << fixed << setprecision(2) << sessions[i].cost
+				<< setw(15) << difficultyToString(sessions[i].difficulty) << endl;
+		}
+
+		outFile.close();
+	}
 
 	string getNonEmptyString(string prompt) {
 		string input;
@@ -90,88 +180,6 @@ private:
 		}
 	}
 
-public:
-	EmbroideryTracker(Session s[], int numElements) {
-		for (int i = 0; i < numElements; ++i) {
-			addSession(s[i]);
-		}
-	}
-
-	bool addSession(Session& s) {
-		if (numSessions >= MAX_SESSIONS || s.hours < 0 || s.cost < 0)
-			return false;
-		sessions[numSessions++] = s;
-		return true;
-	}
-
-	int getSessionCount() {
-		return numSessions;
-	}
-
-	double calculateTotalHours() {
-		double total = 0.0;
-		for (int i = 0; i < numSessions; i++)
-			total += sessions[i].hours;
-
-		return total;
-	}
-
-	double getAverageHours() {
-		if (numSessions == 0) return 0.0;
-		return calculateTotalHours() / numSessions;
-	}
-
-	void fillSession(Session& s) {
-		s.description = getNonEmptyString("Session description : ");
-		s.hours = getPositiveDouble("Hours spent: ");
-		s.cost = getPositiveDouble("Thread cost: ");
-		s.difficulty = getDifficulty();
-	}
-
-	DifficultyLevel getHardestDifficulty() {
-		DifficultyLevel hardest = EASY;
-		for (int i = 0; i < numSessions; i++) {
-			if (sessions[i].difficulty > hardest)
-				hardest = sessions[i].difficulty;
-		}
-		return hardest;
-	}
-	
-	void showBanner() {
-		cout << "=========================\n";
-		cout << "    Embroidery Tracker   \n";
-		cout << "=========================\n\n";
-	}
-
-	void printSession(Session& s) {
-
-		cout << left << setw(20) << s.description
-			<< setw(10) << fixed << setprecision(1) << s.hours
-			<< setw(10) << fixed << setprecision(2) << s.cost
-			<< setw(15) << difficultyToString(s.difficulty) << endl;
-	}
-
-	void saveReport(string& name, double goal) {
-		ofstream outFile("report.txt");
-
-		outFile << "Embroidery Report for " << name << endl;
-		outFile << "Weekly Hour Goal: " << fixed << setprecision(1) << goal << "\n\n";
-
-		for (int i = 0; i < numSessions; i++) {
-			string diff;
-			if (sessions[i].difficulty == EASY) diff = "Easy";
-			else if (sessions[i].difficulty == INTERMEDIATE) diff = "Intermediate";
-			else diff = "Hard";
-
-			outFile << left << setw(20) << sessions[i].description
-				<< setw(10) << fixed << setprecision(1) << sessions[i].hours
-				<< setw(10) << fixed << setprecision(2) << sessions[i].cost
-				<< setw(15) << diff << endl;
-		}
-
-		outFile.close();
-	}
-
 	void showMenu() {
 		cout << "\nMenu:\n";
 		cout << "1. Add embroidery session.\n";
@@ -189,25 +197,21 @@ public:
 			total += sessions[i].cost;
 		return total;
 	}
-
-	
 };
 
 // Main
 #ifndef _DEBUG
 int main() {
-	Session sessions[MAX_SESSIONS];
-	int sessionCount = 0;
+	EmbroideryTracker tracker = EmbroideryTracker();
+	tracker.showBanner();
 
-	showBanner();
-
-	string userName = getNonEmptyString("Enter your name: ");
-	double weeklyGoal = getPositiveDouble("Enter your weekly goal for embroidery hours: ");
+	string userName = tracker.getNonEmptyString("Enter your name: ");
+	double weeklyGoal = tracker.getPositiveDouble("Enter your weekly goal for embroidery hours: ");
 
 	int choice;
 
 	do {
-		showMenu();
+		tracker.showMenu();
 		cin >> choice;
 
 		while (cin.fail()) {
@@ -219,9 +223,8 @@ int main() {
 
 		switch (choice) {
 		case 1:
-			if (sessionCount < MAX_SESSIONS) {
-				fillSession(sessions[sessionCount]);
-				sessionCount++;
+			if (tracker.numSessions < MAX_SESSIONS) {
+				tracker.fillSession();
 			}
 			else {
 				cout << "You have reached the maximum number of sessions.\n";
@@ -229,7 +232,7 @@ int main() {
 			break;
 
 		case 2:
-			if (sessionCount == 0) {
+			if (tracker.numSessions == 0) {
 				cout << "No embroidery sessions recorded yet.\n";
 			}
 			else {
@@ -239,15 +242,13 @@ int main() {
 					<< setw(10) << "Cost"
 					<< setw(15) << "Difficulty" << endl;
 
-				for (int i = 0; i < sessionCount; i++) {
-					printSession(sessions[i]);
-				}
+				tracker.printAllSessions();
 			}
 			break;
 
 		case 3: {
-			double totalHours = calculateTotalHours(sessions, sessionCount);
-			double totalCost = calculateTotalCost(sessions, sessionCount);
+			double totalHours = tracker.calculateTotalHours();
+			double totalCost = tracker.calculateTotalCost();
 
 			cout << "\nRecommendation for " << userName << ":\n";
 
@@ -264,7 +265,7 @@ int main() {
 		}
 
 		case 4:
-			saveReport(sessions, sessionCount, userName, weeklyGoal);
+			tracker.saveReport(userName, weeklyGoal);
 			cout << "Report saved to report.txt\n";
 			break;
 
@@ -292,10 +293,18 @@ TEST_CASE("Calculations - totals") {
 
 	CHECK(tracker.calculateTotalHours() == doctest::Approx(6.0));
 	CHECK(tracker.calculateTotalCost() == doctest::Approx(30.0));
+	CHECK(tracker.getAverageHours() == doctest::Approx(3.0));
+}
+
+TEST_CASE("Calculation edge case - no sessions") {
+	EmbroideryTracker tracker = EmbroideryTracker();
+
+	CHECK(tracker.calculateTotalHours() == 0.0);
+	CHECK(tracker.calculateTotalCost() == 0.0);
 }
 
 TEST_CASE("Calculation edge case - empty session") {
-	Session s[1];
+	Session s[1] = { };
 	EmbroideryTracker tracker = EmbroideryTracker(s, 1);
 
 	CHECK(tracker.calculateTotalHours() == 0.0);
@@ -306,6 +315,13 @@ TEST_CASE("Enum decision logic") {
 	CHECK(string(difficultyToString(EASY)) == "Easy");
 	CHECK(string(difficultyToString(INTERMEDIATE)) == "Intermediate");
 	CHECK(string(difficultyToString(HARD)) == "Hard");
+
+	Session s[2] = {
+		{"A", 2.5, 10.0, EASY},
+		{"B", 3.5, 20.0, HARD},
+	};
+	EmbroideryTracker tracker = EmbroideryTracker(s, 2);
+	CHECK(tracker.getHardestDifficulty() == HARD);
 }
 
 TEST_CASE("Struct and array processing") {
@@ -323,11 +339,14 @@ TEST_CASE("Struct and array processing") {
 TEST_CASE("Class methods - normal and guard cases") {
 	Session s[1] = {"Test", 2.0, 5.0, HARD};
 	EmbroideryTracker t = EmbroideryTracker(s, 1);
-	Session newSession = { "New", 3.0, EASY };
+	Session newSession = { "New", 3.0, 5.0, EASY };
 	
 	CHECK(t.addSession(newSession) == true); // normal case
 	CHECK(t.getSessionCount() == 2);
 	CHECK(t.calculateTotalHours() == 5.0);
 	CHECK(t.getHardestDifficulty() == HARD);
+
+	Session bad = { "Bad", -1.0, -5.0, EASY };
+	CHECK(t.addSession(bad) == false);
 }
 #endif
