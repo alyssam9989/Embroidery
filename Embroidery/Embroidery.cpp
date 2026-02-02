@@ -6,10 +6,8 @@
 using namespace std;
 
 // DOCTEST
-#ifdef _DEBUG
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
-#endif
 
 // Constants
 const int MAX_SESSIONS = 5;
@@ -199,8 +197,81 @@ public:
 	}
 };
 
+#ifdef RUN_TESTS
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "doctest.h"
+
+// DOCTEST
+
+TEST_CASE("Calculations - totals") {
+	Session s[2] = {
+		{"A", 2.5, 10.0, EASY},
+		{"B", 3.5, 20.0, HARD},
+	};
+	EmbroideryTracker tracker = EmbroideryTracker(s, 2);
+
+	CHECK(tracker.calculateTotalHours() == doctest::Approx(6.0));
+	CHECK(tracker.calculateTotalCost() == doctest::Approx(30.0));
+	CHECK(tracker.getAverageHours() == doctest::Approx(3.0));
+}
+
+TEST_CASE("Calculation edge case - no sessions") {
+	EmbroideryTracker tracker = EmbroideryTracker();
+
+	CHECK(tracker.calculateTotalHours() == 0.0);
+	CHECK(tracker.calculateTotalCost() == 0.0);
+}
+
+TEST_CASE("Calculation edge case - empty session") {
+	Session s[1] = { };
+	EmbroideryTracker tracker = EmbroideryTracker(s, 1);
+
+	CHECK(tracker.calculateTotalHours() == 0.0);
+	CHECK(tracker.calculateTotalCost() == 0.0);
+}
+
+TEST_CASE("Enum decision logic") {
+	CHECK(string(difficultyToString(EASY)) == "Easy");
+	CHECK(string(difficultyToString(INTERMEDIATE)) == "Intermediate");
+	CHECK(string(difficultyToString(HARD)) == "Hard");
+
+	Session s[2] = {
+		{"A", 2.5, 10.0, EASY},
+		{"B", 3.5, 20.0, HARD},
+	};
+	EmbroideryTracker tracker = EmbroideryTracker(s, 2);
+	CHECK(tracker.getHardestDifficulty() == HARD);
+}
+
+TEST_CASE("Struct and array processing") {
+	Session s[3] = {
+		{"A", 1, 5, EASY},
+		{"B", 2, 10, INTERMEDIATE},
+		{"C", 3, 15, HARD}
+	};
+	EmbroideryTracker tracker = EmbroideryTracker(s, 3);
+
+	CHECK(tracker.calculateTotalHours() == 6);
+	CHECK(tracker.calculateTotalCost() == 30);
+}
+
+TEST_CASE("Class methods - normal and guard cases") {
+	Session s[1] = { "Test", 2.0, 5.0, HARD };
+	EmbroideryTracker t = EmbroideryTracker(s, 1);
+	Session newSession = { "New", 3.0, 5.0, EASY };
+
+	CHECK(t.addSession(newSession) == true); // normal case
+	CHECK(t.getSessionCount() == 2);
+	CHECK(t.calculateTotalHours() == 5.0);
+	CHECK(t.getHardestDifficulty() == HARD);
+
+	Session bad = { "Bad", -1.0, -5.0, EASY };
+	CHECK(t.addSession(bad) == false);
+}
+
+#else
+
 // Main
-#ifndef _DEBUG
 int main() {
 	EmbroideryTracker tracker = EmbroideryTracker();
 	tracker.showBanner();
@@ -278,75 +349,5 @@ int main() {
 	} while (choice != 5);
 
 	return 0;
-}
-#endif
-
-// DOCTEST
-#ifdef _DEBUG // test mode only
-
-TEST_CASE("Calculations - totals") {
-	Session s[2] = {
-		{"A", 2.5, 10.0, EASY},
-		{"B", 3.5, 20.0, HARD},
-	};
-	EmbroideryTracker tracker = EmbroideryTracker(s, 2);
-
-	CHECK(tracker.calculateTotalHours() == doctest::Approx(6.0));
-	CHECK(tracker.calculateTotalCost() == doctest::Approx(30.0));
-	CHECK(tracker.getAverageHours() == doctest::Approx(3.0));
-}
-
-TEST_CASE("Calculation edge case - no sessions") {
-	EmbroideryTracker tracker = EmbroideryTracker();
-
-	CHECK(tracker.calculateTotalHours() == 0.0);
-	CHECK(tracker.calculateTotalCost() == 0.0);
-}
-
-TEST_CASE("Calculation edge case - empty session") {
-	Session s[1] = { };
-	EmbroideryTracker tracker = EmbroideryTracker(s, 1);
-
-	CHECK(tracker.calculateTotalHours() == 0.0);
-	CHECK(tracker.calculateTotalCost() == 0.0);
-}
-
-TEST_CASE("Enum decision logic") {
-	CHECK(string(difficultyToString(EASY)) == "Easy");
-	CHECK(string(difficultyToString(INTERMEDIATE)) == "Intermediate");
-	CHECK(string(difficultyToString(HARD)) == "Hard");
-
-	Session s[2] = {
-		{"A", 2.5, 10.0, EASY},
-		{"B", 3.5, 20.0, HARD},
-	};
-	EmbroideryTracker tracker = EmbroideryTracker(s, 2);
-	CHECK(tracker.getHardestDifficulty() == HARD);
-}
-
-TEST_CASE("Struct and array processing") {
-	Session s[3] = {
-		{"A", 1, 5, EASY},
-		{"B", 2, 10, INTERMEDIATE},
-		{"C", 3, 15, HARD}
-	};
-	EmbroideryTracker tracker = EmbroideryTracker(s, 3);
-
-	CHECK(tracker.calculateTotalHours() == 6);
-	CHECK(tracker.calculateTotalCost() == 30);
-}
-
-TEST_CASE("Class methods - normal and guard cases") {
-	Session s[1] = {"Test", 2.0, 5.0, HARD};
-	EmbroideryTracker t = EmbroideryTracker(s, 1);
-	Session newSession = { "New", 3.0, 5.0, EASY };
-	
-	CHECK(t.addSession(newSession) == true); // normal case
-	CHECK(t.getSessionCount() == 2);
-	CHECK(t.calculateTotalHours() == 5.0);
-	CHECK(t.getHardestDifficulty() == HARD);
-
-	Session bad = { "Bad", -1.0, -5.0, EASY };
-	CHECK(t.addSession(bad) == false);
 }
 #endif
