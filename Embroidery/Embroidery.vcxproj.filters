@@ -26,5 +26,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />
+    <None Include="..\.github\workflows\tests.yml" />
   </ItemGroup>
 </Project>
