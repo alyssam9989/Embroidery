@@ -369,6 +369,7 @@ TEST_CASE("Class methods - normal and guard cases") {
 	CHECK(t.addSession(bad) == false);
 }
 
+// New Tests- Week 4
 TEST_CASE("EmbroideryItem constructor initializes fields") {
 	EmbroideryItem item("Sampler", 30, INTERMEDIATE);
 

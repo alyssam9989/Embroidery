@@ -27,5 +27,6 @@
   <ItemGroup>
     <None Include="..\README.md" />
     <None Include="..\.github\workflows\tests.yml" />
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
 </Project>
