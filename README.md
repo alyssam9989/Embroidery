@@ -1,3 +1,5 @@
+[![C++ doctest (Windows)](https://github.com/alyssam9989/Embroidery/actions/workflows/tests.yml/badge.svg)](https://github.com/alyssam9989/Embroidery/actions/workflows/tests.yml)
+
 # Embroidery
 This program is intended to log embroidery projects as well as track the cost and hours that went into them. 
 

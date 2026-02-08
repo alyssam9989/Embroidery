@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <fstream>
 #include <string>
+#include <sstream>
 
 using namespace std;
 
@@ -37,6 +38,109 @@ string difficultyToString(DifficultyLevel d) {
 	default: return "Unknown";
 	}
 }
+
+// New Class- Week 4
+class EmbroideryItem {
+protected:
+	string name;
+	int duration;
+	DifficultyLevel difficulty;
+
+public:
+	EmbroideryItem()
+		: name(""), duration(0), difficulty(EASY) {}
+
+	EmbroideryItem(string n, int d, DifficultyLevel diff)
+		: name(n), duration(d), difficulty(diff) {}
+
+	string getName() const { return name; }
+	int getDuration() const { return duration; }
+	DifficultyLevel getDifficulty() const { return difficulty; }
+
+	void setName(string n) { name = n; }
+	void setDuration(int d) { duration = d; }
+	void setDifficulty(DifficultyLevel d) { difficulty = d; }
+
+	virtual void print() const {
+		cout << "Name: " << name
+			<< ", Duration: " << duration
+			<< ", Difficulty: " << difficultyToString(difficulty);
+	}
+
+	virtual ~EmbroideryItem() {}
+};
+
+// Composition Class- Week 4
+class CostInfo {
+private:
+	double cost;
+
+public:
+	CostInfo() : cost(0.0) {}
+	CostInfo(double c) : cost(c) {}
+
+	void setCost(double c) { cost = c; }
+	double getCost() const { return cost; }
+
+	bool isFree() const {
+		return cost == 0.0;
+	}
+
+	string formattedCost() const {
+		ostringstream out;
+		out << "$" << fixed << setprecision(2) << cost;
+		return out.str();
+	}
+};
+
+// Derived Class 1- Week 4
+class PracticeProject : public EmbroideryItem {
+private: 
+	int stitchCount;
+	CostInfo costInfo; // composition
+public: 
+	PracticeProject(string n, int d, DifficultyLevel diff, int stitches, double cost)
+		: EmbroideryItem(n, d, diff),
+		stitchCount(stitches),
+		costInfo(cost) {}
+
+	int getStitchCount() const { return stitchCount; }
+	void setStitchCount(int s) { stitchCount = s; }
+
+	void print() const override {
+		EmbroideryItem::print();
+		cout << ", Stitches: " << stitchCount
+			<< ", Cost: " << costInfo.formattedCost()
+			<< endl;
+	}
+};
+
+// Derived Class 2- Week 4
+class CommissionProject : public EmbroideryItem {
+private:
+	string clientName;
+	CostInfo costInfo; // composition
+
+public:
+	CommissionProject()
+		: EmbroideryItem(), clientName(""), costInfo() {
+	}
+
+	CommissionProject(string n, int d, DifficultyLevel diff, string client, double cost)
+		: EmbroideryItem(n, d, diff),
+		clientName(client),
+		costInfo(cost) {
+	}
+	string getClientName() const { return clientName; }
+	void setClientName(string c) { clientName = c; }
+
+	void print() const override {
+		EmbroideryItem::print();
+		cout << ", Client: " << clientName
+			<< ", Cost: " << costInfo.formattedCost()
+			<< endl;
+	}
+};
 
 // New Class- Week 2
 class EmbroideryTracker {
@@ -263,6 +367,54 @@ TEST_CASE("Class methods - normal and guard cases") {
 
 	Session bad = { "Bad", -1.0, -5.0, EASY };
 	CHECK(t.addSession(bad) == false);
+}
+
+TEST_CASE("EmbroideryItem constructor initializes fields") {
+	EmbroideryItem item("Sampler", 30, INTERMEDIATE);
+
+	CHECK(item.getName() == "Sampler");
+	CHECK(item.getDuration() == 30);
+	CHECK(item.getDifficulty() == INTERMEDIATE);
+}
+
+TEST_CASE("EmbroideryItem setters update fields") {
+	EmbroideryItem item;
+
+	item.setName("Updated");
+	item.setDuration(45);
+	item.setDifficulty(HARD);
+
+	CHECK(item.getName() == "Updated");
+	CHECK(item.getDuration() == 45);
+	CHECK(item.getDifficulty() == HARD);
+}
+
+TEST_CASE("CostInfo behaves correctly") {
+	CostInfo cost(0.0);
+
+	CHECK(cost.isFree() == true);
+
+	cost.setCost(12.5);
+	CHECK(cost.isFree() == false);
+	CHECK(cost.getCost() == doctest::Approx(12.5));
+}
+
+TEST_CASE("PracticeProject initializes base and derived fields") {
+	PracticeProject p("Practice", 60, EASY, 150, 20.0);
+
+	CHECK(p.getName() == "Practice");        // base
+	CHECK(p.getDuration() == 60);            // base
+	CHECK(p.getDifficulty() == EASY);        // base
+	CHECK(p.getStitchCount() == 150);         // derived
+}
+
+TEST_CASE("CommissionProject initializes base and derived fields") {
+	CommissionProject c("Logo", 90, HARD, "Client A", 75.0);
+
+	CHECK(c.getName() == "Logo");             // base
+	CHECK(c.getDuration() == 90);             // base
+	CHECK(c.getDifficulty() == HARD);         // base
+	CHECK(c.getClientName() == "Client A");   // derived
 }
 
 #else
